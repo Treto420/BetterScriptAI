@@ -1,0 +1,7 @@
+{
+  "title": "BetterScriptAI",
+  "version": "2.0",
+  "author": "Treto",
+  "description": "Records and plays back horn honks, lights, and more alongside Script AI paths.",
+  "forceLoad": ["betterScriptAI"]
+}
