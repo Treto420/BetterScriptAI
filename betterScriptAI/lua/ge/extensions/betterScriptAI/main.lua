@@ -41,6 +41,20 @@ end
 function M.onClientStartMission(levelPath)
   log("I", logTag, "onClientStartMission fired – wiping stale state and bootstrapping vehicles.")
 
+  function M.onClientEndMission()
+    log("I", logTag, "onClientEndMission - clearing honkdata folder.")
+    local honkDir = "mods/unpacked/betterScriptAI/honkdata"
+    local files = FS:findFiles(honkDir, "*.json", 0, true, false)
+    if files then
+        for _, fpath in ipairs(files) do
+            FS:removeFile(fpath)
+            log("I", logTag, "Deleted: " .. fpath)
+        end
+    end
+    honkData      = {}
+    playbackState = {}
+end
+
   -- Wipe all state from any previous session
   honkData = {}
   playbackState = {}

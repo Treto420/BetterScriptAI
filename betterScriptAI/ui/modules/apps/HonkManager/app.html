@@ -1,0 +1,125 @@
+<div class="honk-panel" ng-controller="HonkManagerCtrl">
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn" ng-class="{active: activeTab === 'vehicles'}" ng-click="activeTab = 'vehicles'">Vehicles</button>
+    <button class="tab-btn" ng-class="{active: activeTab === 'sync'}"     ng-click="activeTab = 'sync'">Sync / Race</button>
+    <button class="tab-btn" ng-class="{active: activeTab === 'debug'}"    ng-click="activeTab = 'debug'">Debug Log</button>
+  </div>
+
+  <!-- ── VEHICLES TAB ── -->
+  <div class="tab-content" ng-show="activeTab === 'vehicles'">
+    <div class="no-vehicles" ng-if="vehicles.length === 0">
+      No vehicles spawned
+    </div>
+
+    <div class="vehicle-card" ng-repeat="v in vehicles" ng-class="'state-' + v.state">
+      <div class="card-header">
+        <span class="veh-name">{{ v.name }}</span>
+        <span class="state-badge">{{ v.state }}</span>
+      </div>
+
+      <div class="card-stats" ng-if="v.state === 'hasData' || v.state === 'playing'">
+        <span>Honks: <strong>{{ v.honkCount }}</strong></span>
+        <span ng-if="v.speedMin != null">
+          Speed: <strong>{{ v.speedMin | number:1 }} – {{ v.speedMax | number:1 }} mph</strong>
+        </span>
+      </div>
+      <div class="card-stats muted" ng-if="v.state === 'idle'">No data recorded</div>
+      <div class="card-stats recording-pulse" ng-if="v.state === 'recording'">
+        Recording... {{ v.honkCount }} honk(s)
+      </div>
+
+      <div class="card-actions">
+        <button ng-if="v.state === 'idle' || v.state === 'hasData'"
+                ng-click="startRecording(v.id)"
+                class="btn btn-record">Record</button>
+
+        <button ng-if="v.state === 'recording'"
+                ng-click="stopRecording(v.id)"
+                class="btn btn-stop">Stop</button>
+
+        <button ng-if="v.state === 'hasData'"
+                ng-click="playback(v.id)"
+                class="btn btn-play">Play</button>
+
+        <button ng-if="v.state === 'playing'"
+                ng-click="stopPlayback(v.id)"
+                class="btn btn-stop">Stop</button>
+
+        <button ng-if="v.state === 'hasData' || v.state === 'idle'"
+                ng-click="clearData(v.id)"
+                class="btn btn-clear">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SYNC TAB ── -->
+  <div class="tab-content" ng-show="activeTab === 'sync'">
+    <div class="sync-header">
+      <span>Select vehicles to sync:</span>
+      <span class="sync-status-badge" ng-class="syncSession.phase">{{ syncSession.phase }}</span>
+    </div>
+
+    <div class="no-vehicles" ng-if="vehicles.length === 0">No vehicles available</div>
+
+    <div class="sync-vehicle-row" ng-repeat="v in vehicles">
+      <label>
+        <input type="checkbox"
+               ng-disabled="v.state !== 'hasData' && v.state !== 'playing'"
+               ng-checked="isSyncParticipant(v.id)"
+               ng-click="toggleSyncParticipant(v.id)" />
+        <span ng-class="{'muted': v.state === 'idle' || v.state === 'recording'}">
+          {{ v.name }}
+        </span>
+        <span class="state-badge small">{{ v.state }}</span>
+      </label>
+    </div>
+
+    <div class="sync-footer">
+      <span class="muted" ng-if="syncParticipants.length === 0">Select vehicles with recorded data</span>
+      <button class="btn btn-sync"
+              ng-disabled="syncParticipants.length < 2 || syncSession.phase === 'playing'"
+              ng-click="triggerSync()">
+        ▶ Sync Playback ({{ syncParticipants.length }} vehicles)
+      </button>
+    </div>
+  </div>
+
+  <!-- ── DEBUG TAB ── -->
+  <div class="tab-content debug-tab" ng-show="activeTab === 'debug'">
+    <div class="debug-toolbar">
+      <select ng-model="logFilter.vehicleId" class="filter-select">
+        <option value="">All Vehicles</option>
+        <option ng-repeat="v in vehicles" value="{{ v.id }}">{{ v.name }}</option>
+      </select>
+
+      <select ng-model="logFilter.type" class="filter-select">
+        <option value="">All Events</option>
+        <option value="honk">Honk</option>
+        <option value="record">Record</option>
+        <option value="playback">Playback</option>
+        <option value="sync">Sync</option>
+        <option value="error">Error</option>
+      </select>
+
+      <button class="btn btn-clear small" ng-click="clearLog()">Clear</button>
+      <label class="autoscroll-label">
+        <input type="checkbox" ng-model="autoScroll" /> Auto-scroll
+      </label>
+    </div>
+
+    <div class="log-viewer" id="logViewer">
+      <div class="log-entry type-{{ entry.type }}"
+           ng-repeat="entry in filteredLog()"
+           ng-click="copyLogEntry(entry)">
+        <span class="log-time">{{ entry.timestamp }}</span>
+        <span class="log-veh"  ng-if="entry.vehicleId">[{{ getVehName(entry.vehicleId) }}]</span>
+        <span class="log-type">[{{ entry.type }}]</span>
+        <span class="log-msg">{{ entry.message }}</span>
+      </div>
+      <div class="no-vehicles" ng-if="filteredLog().length === 0">No log entries</div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,16 @@
+{
+  "name": "HonkManager",
+  "icon": "🔊",
+  "title": "Honk Manager",
+  "description": "Record, preview and sync AI honk scripts across vehicles",
+  "author": "betterScriptAI",
+  "version": "1.0.0",
+  "directive": "honkManagerApp",
+  "template": "app.html",
+  "style": "app.css",
+  "controller": "app.js",
+  "defaultConfig": {
+    "size": [480, 560],
+    "pos": [20, 20]
+  }
+}
